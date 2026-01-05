@@ -50,7 +50,7 @@ Tools:
 🗂️ Project Folder Structure
 
 
-project-root/
+'''project-root/
 │
 ├── app/
 │   ├── __pycache__/
@@ -94,7 +94,7 @@ project-root/
 │
 ├── .gitignore
 ├── db.sqlite3
-└── manage.py
+└── manage.py '''
 
 
 --------------------------------------------------
