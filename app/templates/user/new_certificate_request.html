@@ -1,0 +1,998 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}New Certificate Request - CertChain{% endblock %}
+
+{% block content %}
+<div class="certificate-request-container">
+    <!-- Page Header -->
+    <div class="request-header">
+        <div class="header-content">
+            <h1>New Certificate Request</h1>
+            <p class="subtitle">Select a certificate and send request to admin for verification</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'user_dashboard' %}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="request-form-wrapper">
+        <div class="form-column">
+            <!-- Main Form Card -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2><i class="fas fa-file-certificate"></i> Certificate Request</h2>
+                </div>
+                <div class="form-card-body">
+                    <form method="POST" action="{% url 'submit_certificate_request' %}" id="certificateRequestForm">
+                        {% csrf_token %}
+                        
+                        <!-- User Information -->
+                        <div class="form-section">
+                            <h3 class="section-title">Requestor Information</h3>
+                            <div class="user-info-grid">
+                                <div class="info-field">
+                                    <label>Registration ID</label>
+                                    <div class="readonly-field">{{ request.session.u.reg_id|default:request.session.reg_id }}</div>
+                                </div>
+                                <div class="info-field">
+                                    <label>Name</label>
+                                    <div class="readonly-field">{{ request.session.u.name|default:'User' }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Selection -->
+                        <div class="form-section">
+                            <h3 class="section-title">Certificate Selection</h3>
+                            
+                            <div class="form-group">
+                                <label for="certificate_name" class="form-label">Select Certificate *</label>
+                                <div class="custom-select-wrapper">
+                                    <select class="custom-select" id="certificate_name" name="certificate_name" required>
+                                        <option value="">-- Select a certificate --</option>
+                                        
+                                        <!-- Academic Certificates -->
+                                        <optgroup label="Academic Certificates">
+                                            <option value="B.Tech Degree">B.Tech Degree</option>
+                                            <option value="M.Tech Degree">M.Tech Degree</option>
+                                            <option value="B.Sc Degree">B.Sc Degree</option>
+                                            <option value="M.Sc Degree">M.Sc Degree</option>
+                                            <option value="B.Com Degree">B.Com Degree</option>
+                                            <option value="M.Com Degree">M.Com Degree</option>
+                                            <option value="BBA Degree">BBA Degree</option>
+                                            <option value="MBA Degree">MBA Degree</option>
+                                            <option value="Diploma Certificate">Diploma Certificate</option>
+                                            <option value="Course Completion Certificate">Course Completion Certificate</option>
+                                            <option value="Transcript">Transcript</option>
+                                            <option value="Migration Certificate">Migration Certificate</option>
+                                            <option value="Character Certificate">Character Certificate</option>
+                                        </optgroup>
+                                        
+                                        <!-- Sports & Games -->
+                                        <optgroup label="Sports & Games">
+                                            <option value="Inter-College Sports Certificate">Inter-College Sports Certificate</option>
+                                            <option value="University Level Sports Certificate">University Level Sports Certificate</option>
+                                            <option value="State Level Sports Certificate">State Level Sports Certificate</option>
+                                            <option value="National Level Sports Certificate">National Level Sports Certificate</option>
+                                            <option value="Tournament Winner Certificate">Tournament Winner Certificate</option>
+                                            <option value="Participation Certificate (Sports)">Participation Certificate (Sports)</option>
+                                            <option value="Sports Achievement Award">Sports Achievement Award</option>
+                                        </optgroup>
+                                        
+                                        <!-- Cultural & Arts -->
+                                        <optgroup label="Cultural & Arts">
+                                            <option value="Cultural Fest Certificate">Cultural Fest Certificate</option>
+                                            <option value="Music Competition Certificate">Music Competition Certificate</option>
+                                            <option value="Dance Competition Certificate">Dance Competition Certificate</option>
+                                            <option value="Drama Competition Certificate">Drama Competition Certificate</option>
+                                            <option value="Art Competition Certificate">Art Competition Certificate</option>
+                                            <option value="Literary Competition Certificate">Literary Competition Certificate</option>
+                                            <option value="Debate Competition Certificate">Debate Competition Certificate</option>
+                                            <option value="Photography Competition Certificate">Photography Competition Certificate</option>
+                                        </optgroup>
+                                        
+                                        <!-- Professional Certificates -->
+                                        <optgroup label="Professional Certificates">
+                                            <option value="Internship Certificate">Internship Certificate</option>
+                                            <option value="Training Certificate">Training Certificate</option>
+                                            <option value="Workshop Certificate">Workshop Certificate</option>
+                                            <option value="Seminar Certificate">Seminar Certificate</option>
+                                            <option value="Conference Certificate">Conference Certificate</option>
+                                            <option value="Professional Certification">Professional Certification</option>
+                                            <option value="Skill Development Certificate">Skill Development Certificate</option>
+                                        </optgroup>
+                                        
+                                        <!-- Other Certificates -->
+                                        <optgroup label="Other Certificates">
+                                            <option value="Attendance Certificate">Attendance Certificate</option>
+                                            <option value="Appreciation Certificate">Appreciation Certificate</option>
+                                            <option value="Volunteer Certificate">Volunteer Certificate</option>
+                                            <option value="Blood Donation Certificate">Blood Donation Certificate</option>
+                                            <option value="Community Service Certificate">Community Service Certificate</option>
+                                            <option value="Other">Other (Please specify)</option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="select-arrow">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Other Certificate Input -->
+                            <div class="form-group" id="otherCertificateField" style="display: none;">
+                                <label for="other_certificate_name" class="form-label">Specify Certificate Name *</label>
+                                <input type="text" class="form-input" id="other_certificate_name" name="other_certificate_name" 
+                                       placeholder="Enter certificate name">
+                            </div>
+                            
+                            <!-- Certificate Description -->
+                            <div class="form-group">
+                                <label for="certificate_description" class="form-label">Brief Description (Optional)</label>
+                                <textarea class="form-textarea" id="certificate_description" name="certificate_description" 
+                                          rows="3" placeholder="Add any additional details about this certificate"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-section">
+                            <div class="terms-card">
+                                <div class="terms-header">
+                                    <h3><i class="fas fa-info-circle"></i> Important Information</h3>
+                                </div>
+                                <div class="terms-body">
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="termsAgreement" class="custom-checkbox" required>
+                                        <label for="termsAgreement" class="checkbox-label">
+                                            I confirm that I possess the selected certificate and it is genuine.
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="privacyAgreement" class="custom-checkbox" required>
+                                        <label for="privacyAgreement" class="checkbox-label">
+                                            I agree to share my certificate details with administrators for verification.
+                                        </label>
+                                    </div>
+                                    <div class="terms-note">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>After submission, admin will contact you for physical verification of the certificate.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-actions">
+                            <a href="{% url 'user_dashboard' %}" class="cancel-btn">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="submit-btn" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i> Send Request to Admin
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="help-card">
+                <div class="help-header">
+                    <h3><i class="fas fa-question-circle"></i> How It Works</h3>
+                </div>
+                <div class="help-body">
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Select Certificate</h4>
+                                <p>Choose the certificate you want to verify from the dropdown list</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Send Request</h4>
+                                <p>Submit your request to the admin for verification</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Admin Verification</h4>
+                                <p>Admin will verify your certificate and contact you if needed</p>
+                            </div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Blockchain Storage</h4>
+                                <p>Once verified, certificate will be stored on blockchain</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== CSS Variables ===== */
+    :root {
+        --primary: #0d1b2a;
+        --secondary: #1b3a4b;
+        --accent: #4cc9f0;
+        --accent-dark: #3aa8d8;
+        --light: #ffffff;
+        --light-bg: #f5f9ff;
+        --border: #e2e8f0;
+        --text: #1b3a4b;
+        --text-muted: #415a77;
+        --success: #00a86b;
+        --warning: #ffa502;
+        --danger: #ff4757;
+        --radius: 12px;
+        --shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+    }
+
+    /* ===== Main Container ===== */
+    .certificate-request-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+        min-height: calc(100vh - 80px);
+    }
+
+    /* ===== Request Header ===== */
+    .request-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        padding: 30px;
+        border-radius: var(--radius);
+        margin-bottom: 30px;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .header-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .back-btn:hover {
+        background: white;
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    /* ===== Form Wrapper ===== */
+    .request-form-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
+    .form-column {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    /* ===== Form Card ===== */
+    .form-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+        color: var(--primary);
+        padding: 25px 30px;
+    }
+
+    .form-card-header h2 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .form-card-body {
+        padding: 30px;
+    }
+
+    /* ===== Form Sections ===== */
+    .form-section {
+        margin-bottom: 35px;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        color: var(--text);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* ===== User Info ===== */
+    .user-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .info-field {
+        background: var(--light-bg);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .info-field label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .readonly-field {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        padding: 8px 0;
+    }
+
+    /* ===== Form Controls ===== */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    /* Custom Select */
+    .custom-select-wrapper {
+        position: relative;
+    }
+
+    .custom-select {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background: white;
+        font-size: 1rem;
+        color: var(--text);
+        appearance: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-family: inherit;
+    }
+
+    .custom-select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+    }
+
+    .custom-select:hover {
+        border-color: var(--accent);
+    }
+
+    .select-arrow {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    /* Select Options Styling */
+    .custom-select optgroup {
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--light-bg);
+        padding: 10px 0;
+    }
+
+    .custom-select option {
+        padding: 12px 20px;
+        color: var(--text);
+        background: white;
+        font-weight: normal;
+    }
+
+    .custom-select option:hover {
+        background: var(--accent) !important;
+        color: white;
+    }
+
+    /* Form Inputs */
+    .form-input {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--text);
+        transition: var(--transition);
+        font-family: inherit;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--text);
+        transition: var(--transition);
+        font-family: inherit;
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.6;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+    }
+
+    /* ===== Terms Card ===== */
+    .terms-card {
+        background: var(--light-bg);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .terms-header {
+        background: rgba(76, 201, 240, 0.1);
+        padding: 20px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .terms-header h3 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text);
+        font-size: 1.2rem;
+    }
+
+    .terms-body {
+        padding: 25px;
+    }
+
+    /* Checkbox Styling */
+    .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+
+    .checkbox-group:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .custom-checkbox {
+        width: 22px;
+        height: 22px;
+        margin-top: 3px;
+        flex-shrink: 0;
+        appearance: none;
+        border: 2px solid var(--border);
+        border-radius: 5px;
+        cursor: pointer;
+        position: relative;
+        transition: var(--transition);
+    }
+
+    .custom-checkbox:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .custom-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .checkbox-label {
+        flex: 1;
+        color: var(--text);
+        line-height: 1.5;
+        cursor: pointer;
+        font-size: 1rem;
+        user-select: none;
+    }
+
+    .terms-note {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background: rgba(76, 201, 240, 0.08);
+        border-radius: 6px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        border-left: 4px solid var(--accent);
+    }
+
+    .terms-note i {
+        color: var(--accent);
+        font-size: 1.2rem;
+    }
+
+    /* ===== Form Actions ===== */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 25px;
+        border-top: 1px solid var(--border);
+        margin-top: 30px;
+    }
+
+    .cancel-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 28px;
+        background: transparent;
+        border: 2px solid var(--text-muted);
+        color: var(--text-muted);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .cancel-btn:hover {
+        background: var(--text-muted);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 32px;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+        border: none;
+        color: var(--primary);
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+        background: linear-gradient(135deg, var(--accent-dark) 0%, #2c9dc6 100%);
+    }
+
+    .submit-btn:active {
+        transform: translateY(-1px);
+    }
+
+    /* ===== Help Card ===== */
+    .help-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .help-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, #0d1b2a 100%);
+        color: white;
+        padding: 25px 30px;
+    }
+
+    .help-header h3 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 1.5rem;
+    }
+
+    .help-body {
+        padding: 30px;
+    }
+
+    /* Process Steps */
+    .process-steps {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .process-step {
+        position: relative;
+        margin-bottom: 35px;
+        padding-bottom: 35px;
+    }
+
+    .process-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 50px;
+        bottom: -20px;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--accent), transparent);
+        z-index: 1;
+    }
+
+    .step-number {
+        position: absolute;
+        left: -40px;
+        top: 0;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+        z-index: 2;
+    }
+
+    .step-content {
+        padding-left: 15px;
+    }
+
+    .step-content h4 {
+        margin: 0 0 8px 0;
+        color: var(--text);
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .step-content p {
+        margin: 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .process-step:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+        .certificate-request-container {
+            padding: 20px;
+        }
+
+        .request-header {
+            padding: 25px 20px;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+        }
+
+        .form-card-body {
+            padding: 25px 20px;
+        }
+
+        .user-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cancel-btn, .submit-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .process-steps {
+            padding-left: 30px;
+        }
+
+        .step-number {
+            left: -30px;
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+
+        .process-step:not(:last-child)::after {
+            left: 17.5px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .certificate-request-container {
+            padding: 15px;
+        }
+
+        .header-content h1 {
+            font-size: 1.8rem;
+        }
+
+        .form-card-header, .help-header {
+            padding: 20px;
+        }
+
+        .form-card-header h2, .help-header h3 {
+            font-size: 1.4rem;
+        }
+
+        .custom-select, .form-input, .form-textarea {
+            padding: 14px 16px;
+        }
+
+        .terms-body {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle "Other" certificate selection
+        const certificateSelect = document.getElementById('certificate_name');
+        const otherField = document.getElementById('otherCertificateField');
+        const otherInput = document.getElementById('other_certificate_name');
+        
+        certificateSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                otherField.style.display = 'block';
+                otherInput.required = true;
+                // Add focus for better UX
+                setTimeout(() => otherInput.focus(), 100);
+            } else {
+                otherField.style.display = 'none';
+                otherInput.required = false;
+                otherInput.value = '';
+            }
+        });
+        
+        // Form submission handling
+        const form = document.getElementById('certificateRequestForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if terms are agreed
+            const termsAgreement = document.getElementById('termsAgreement').checked;
+            const privacyAgreement = document.getElementById('privacyAgreement').checked;
+            
+            if (!termsAgreement || !privacyAgreement) {
+                showAlert('Please agree to the terms and conditions before submitting.', 'warning');
+                return;
+            }
+            
+            // Validate certificate selection
+            const certificateName = certificateSelect.value;
+            if (!certificateName) {
+                showAlert('Please select a certificate from the list.', 'warning');
+                certificateSelect.focus();
+                return;
+            }
+            
+            // If "Other" is selected, validate the input
+            if (certificateName === 'Other') {
+                const otherCertificateName = otherInput.value.trim();
+                if (!otherCertificateName) {
+                    showAlert('Please specify the certificate name.', 'warning');
+                    otherInput.focus();
+                    return;
+                }
+                if (otherCertificateName.length < 3) {
+                    showAlert('Certificate name must be at least 3 characters long.', 'warning');
+                    otherInput.focus();
+                    return;
+                }
+            }
+            
+            // Show loading state
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending Request...';
+                submitBtn.disabled = true;
+                
+                // Re-enable button after 10 seconds (in case of error)
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 10000);
+            }
+            
+            // Submit the form
+            this.submit();
+        });
+        
+        // Helper function to show alerts
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `custom-alert ${type}`;
+            alert.innerHTML = `
+                <div class="alert-content">
+                    <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                    <button class="alert-close">&times;</button>
+                </div>
+            `;
+            
+            // Style the alert
+            alert.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 30px;
+                background: ${type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+                color: ${type === 'warning' ? '#856404' : '#0c5460'};
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                z-index: 1000;
+                max-width: 400px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            // Add to document
+            document.body.appendChild(alert);
+            
+            // Close button functionality
+            const closeBtn = alert.querySelector('.alert-close');
+            closeBtn.onclick = () => {
+                alert.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => alert.remove(), 300);
+            };
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => alert.remove(), 300);
+                }
+            }, 5000);
+            
+            // Add animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Enter key prevention in textarea
+        const descriptionTextarea = document.getElementById('certificate_description');
+        descriptionTextarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+            }
+        });
+        
+        // Form change tracking for unsaved changes warning
+        let formChanged = false;
+        
+        form.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('change', function() {
+                formChanged = true;
+            });
+            
+            element.addEventListener('input', function() {
+                formChanged = true;
+            });
+        });
+        
+        // Prevent leaving page with unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                return e.returnValue;
+            }
+        });
+        
+        // Reset formChanged when form is submitted
+        form.addEventListener('submit', function() {
+            formChanged = false;
+        });
+        
+        // Cancel button resets tracking
+        document.querySelector('.cancel-btn').addEventListener('click', function() {
+            formChanged = false;
+        });
+    });
+</script>
+{% endblock %}

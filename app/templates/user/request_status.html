@@ -1,0 +1,755 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request Status - CertChain{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Request Status</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">Certificate Request Status</h3>
+                            <p class="text-muted mb-0">Track the status of all your certificate requests</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'new_certificate_request' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>New Request
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-info border-0 border-bottom-0 border-end-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-info text-uppercase mb-1">
+                                Total Requests
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ total_requests }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-paper-plane fa-2x text-info opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-warning border-0 border-bottom-0 border-end-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-warning text-uppercase mb-1">
+                                Pending
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ pending_requests }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-success border-0 border-bottom-0 border-end-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-success text-uppercase mb-1">
+                                Accepted
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ accepted_requests }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-danger border-0 border-bottom-0 border-end-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-danger text-uppercase mb-1">
+                                Rejected
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ rejected_requests }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search requests...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-md-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                                All
+                            </button>
+                            <button type="button" class="btn btn-outline-warning filter-btn" data-filter="pending">
+                                Pending
+                            </button>
+                            <button type="button" class="btn btn-outline-success filter-btn" data-filter="accepted">
+                                Accepted
+                            </button>
+                            <button type="button" class="btn btn-outline-danger filter-btn" data-filter="rejected">
+                                Rejected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Timeline -->
+    {% if requests %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Request History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline" id="requestsTimeline">
+                        {% for request in requests %}
+                        <div class="timeline-item request-item mb-4" data-status="{{ request.status }}">
+                            <div class="timeline-marker">
+                                {% if request.status == 'pending' %}
+                                <div class="timeline-marker-icon bg-warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                {% elif request.status == 'accepted' %}
+                                <div class="timeline-marker-icon bg-success">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                {% elif request.status == 'rejected' %}
+                                <div class="timeline-marker-icon bg-danger">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                                <h5 class="card-title mb-1">{{ request.certificate_name }}</h5>
+                                                <p class="text-muted mb-0">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    Requested: {{ request.request_date|date:"M d, Y H:i" }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                {% if request.status == 'pending' %}
+                                                <span class="badge bg-warning rounded-pill">Pending</span>
+                                                {% elif request.status == 'accepted' %}
+                                                <span class="badge bg-success rounded-pill">Accepted</span>
+                                                {% elif request.status == 'rejected' %}
+                                                <span class="badge bg-danger rounded-pill">Rejected</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <small class="text-muted">Request ID:</small>
+                                                <p class="mb-2 fw-semibold">#{{ request.id }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <small class="text-muted">Last Updated:</small>
+                                                <p class="mb-2">
+                                                    {% if request.status == 'accepted' and request.accepted_date %}
+                                                        {{ request.accepted_date|date:"M d, Y H:i" }}
+                                                    {% elif request.status == 'rejected' and request.rejected_date %}
+                                                        {{ request.rejected_date|date:"M d, Y H:i" }}
+                                                    {% else %}
+                                                        {{ request.request_date|date:"M d, Y H:i" }}
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if request.description %}
+                                        <div class="mb-3">
+                                            <small class="text-muted">Description:</small>
+                                            <p class="mb-0">{{ request.description|truncatechars:200 }}</p>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                {% if request.status == 'pending' %}
+                                                <small class="text-warning">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Under review by admin
+                                                </small>
+                                                {% elif request.status == 'accepted' %}
+                                                <small class="text-success">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    Request accepted
+                                                    {% if request.accepted_date %}
+                                                    on {{ request.accepted_date|date:"M d, Y" }}
+                                                    {% endif %}
+                                                </small>
+                                                {% elif request.status == 'rejected' %}
+                                                <small class="text-danger">
+                                                    <i class="fas fa-times-circle me-1"></i>
+                                                    Request rejected
+                                                    {% if request.rejected_date %}
+                                                    on {{ request.rejected_date|date:"M d, Y" }}
+                                                    {% endif %}
+                                                </small>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#requestModal{{ request.id }}">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Request Details Modal -->
+                        <div class="modal fade" id="requestModal{{ request.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Request Details #{{ request.id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0">Request Information</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-sm">
+                                                            <tr>
+                                                                <th class="w-40">Certificate:</th>
+                                                                <td>{{ request.certificate_name }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Request ID:</th>
+                                                                <td>#{{ request.id }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Request Date:</th>
+                                                                <td>{{ request.request_date|date:"M d, Y H:i" }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Status:</th>
+                                                                <td>
+                                                                    {% if request.status == 'pending' %}
+                                                                    <span class="badge bg-warning">Pending</span>
+                                                                    {% elif request.status == 'accepted' %}
+                                                                    <span class="badge bg-success">Accepted</span>
+                                                                    {% elif request.status == 'rejected' %}
+                                                                    <span class="badge bg-danger">Rejected</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0">Status Information</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-sm">
+                                                            {% if request.status == 'accepted' %}
+                                                            <tr>
+                                                                <th class="w-40">Accepted Date:</th>
+                                                                <td>{{ request.accepted_date|date:"M d, Y H:i" }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Verified By:</th>
+                                                                <td>{{ request.verified_by|default:"Admin" }}</td>
+                                                            </tr>
+                                                            {% if request.admin_remarks %}
+                                                            <tr>
+                                                                <th>Remarks:</th>
+                                                                <td>{{ request.admin_remarks }}</td>
+                                                            </tr>
+                                                            {% endif %}
+                                                            {% elif request.status == 'rejected' %}
+                                                            <tr>
+                                                                <th>Rejected Date:</th>
+                                                                <td>{{ request.rejected_date|date:"M d, Y H:i" }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Reason:</th>
+                                                                <td>{{ request.reject_reason|default:"Not specified" }}</td>
+                                                            </tr>
+                                                            {% if request.reject_details %}
+                                                            <tr>
+                                                                <th>Details:</th>
+                                                                <td>{{ request.reject_details }}</td>
+                                                            </tr>
+                                                            {% endif %}
+                                                            {% else %}
+                                                            <tr>
+                                                                <td colspan="2" class="text-center text-muted">
+                                                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                                                    <p class="mb-0">Request is under review</p>
+                                                                </td>
+                                                            </tr>
+                                                            {% endif %}
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {% if request.description %}
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Request Description</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                {{ request.description|linebreaks }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Status Timeline -->
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Status Timeline</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="timeline timeline-sm">
+                                                    <!-- Request Submitted -->
+                                                    <div class="timeline-item">
+                                                        <div class="timeline-marker bg-primary"></div>
+                                                        <div class="timeline-content">
+                                                            <h6 class="mb-1">Request Submitted</h6>
+                                                            <p class="text-muted mb-0">{{ request.request_date|date:"M d, Y H:i" }}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Status Updates -->
+                                                    {% if request.status == 'accepted' %}
+                                                    <div class="timeline-item">
+                                                        <div class="timeline-marker bg-success"></div>
+                                                        <div class="timeline-content">
+                                                            <h6 class="mb-1">Request Accepted</h6>
+                                                            <p class="text-muted mb-0">{{ request.accepted_date|date:"M d, Y H:i" }}</p>
+                                                            {% if request.admin_remarks %}
+                                                            <p class="mb-0 small">{{ request.admin_remarks }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% elif request.status == 'rejected' %}
+                                                    <div class="timeline-item">
+                                                        <div class="timeline-marker bg-danger"></div>
+                                                        <div class="timeline-content">
+                                                            <h6 class="mb-1">Request Rejected</h6>
+                                                            <p class="text-muted mb-0">{{ request.rejected_date|date:"M d, Y H:i" }}</p>
+                                                            {% if request.reject_reason %}
+                                                            <p class="mb-0 small">Reason: {{ request.reject_reason }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="timeline-item">
+                                                        <div class="timeline-marker bg-warning"></div>
+                                                        <div class="timeline-content">
+                                                            <h6 class="mb-1">Under Review</h6>
+                                                            <p class="text-muted mb-0">Waiting for admin approval</p>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        {% if request.status == 'accepted' and request.certificate_file %}
+                                        <div class="card mt-3">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Certificate File</h6>
+                                            </div>
+                                            <div class="card-body text-center">
+                                                {% with request.certificate_file.name|slice:"-3:" as ext %}
+                                                {% if ext == 'pdf' %}
+                                                <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                                                {% elif ext in 'jpg,jpeg,png,gif' %}
+                                                <i class="fas fa-file-image fa-4x text-success mb-3"></i>
+                                                {% else %}
+                                                <i class="fas fa-file fa-4x text-primary mb-3"></i>
+                                                {% endif %}
+                                                {% endwith %}
+                                                
+                                                <div class="mt-3">
+                                                    <a href="{{ request.certificate_file.url }}" class="btn btn-primary me-2" download>
+                                                        <i class="fas fa-download me-1"></i>Download Certificate
+                                                    </a>
+                                                    <a href="{% url 'my_certificates' %}" class="btn btn-outline-primary">
+                                                        <i class="fas fa-folder me-1"></i>Go to My Certificates
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% elif request.status == 'rejected' %}
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>Request Rejected</strong>
+                                            <p class="mb-0 mt-2">
+                                                Your request was rejected. 
+                                                {% if request.reject_details %}
+                                                Reason: {{ request.reject_details }}
+                                                {% endif %}
+                                            </p>
+                                            <div class="mt-3">
+                                                <a href="{% url 'new_certificate_request' %}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-redo me-1"></i>Submit New Request
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {% if request.status == 'pending' %}
+                                        <button type="button" class="btn btn-warning" disabled>
+                                            <i class="fas fa-clock me-1"></i>Under Review
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if requests.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if requests.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ requests.previous_page_number }}">Previous</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in requests.paginator.page_range %}
+                                {% if requests.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if requests.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ requests.next_page_number }}">Next</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-history fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Request History</h4>
+                    <p class="text-muted mb-4">You haven't submitted any certificate requests yet.</p>
+                    <a href="{% url 'new_certificate_request' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Submit Your First Request
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Timeline Styles */
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 15px;
+        z-index: 1;
+    }
+    
+    .timeline-marker-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .timeline-content {
+        margin-left: 15px;
+    }
+    
+    .timeline-sm .timeline-item {
+        margin-bottom: 15px;
+    }
+    
+    .timeline-sm .timeline-marker {
+        width: 10px;
+        height: 10px;
+        left: -25px;
+        top: 5px;
+    }
+    
+    .timeline-sm .timeline-content {
+        margin-left: 20px;
+    }
+    
+    /* Status Colors */
+    .request-item[data-status="pending"] .card {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .request-item[data-status="accepted"] .card {
+        border-left: 4px solid #198754;
+    }
+    
+    .request-item[data-status="rejected"] .card {
+        border-left: 4px solid #dc3545;
+    }
+    
+    /* Border colors for stats */
+    .border-start-info {
+        border-left: 4px solid #0dcaf0 !important;
+    }
+    
+    .border-start-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .border-start-success {
+        border-left: 4px solid #198754 !important;
+    }
+    
+    .border-start-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+    
+    /* Filter buttons */
+    .filter-btn.active {
+        background-color: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+    
+    /* Modal header gradient */
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1b3a4b 100%);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .timeline {
+            padding-left: 20px;
+        }
+        
+        .timeline::before {
+            left: 10px;
+        }
+        
+        .timeline-marker {
+            left: -20px;
+        }
+        
+        .timeline-marker-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .timeline-content {
+            margin-left: 10px;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const requestItems = document.querySelectorAll('.request-item');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                // Filter items
+                requestItems.forEach(item => {
+                    if (filter === 'all') {
+                        item.style.display = 'block';
+                    } else {
+                        const status = item.dataset.status;
+                        item.style.display = status === filter ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            requestItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+        
+        // Auto-refresh for pending requests
+        function checkForUpdates() {
+            const pendingItems = document.querySelectorAll('.request-item[data-status="pending"]');
+            if (pendingItems.length > 0) {
+                // Check if we should refresh (every 30 seconds)
+                setTimeout(() => {
+                    window.location.reload();
+                }, 30000);
+            }
+        }
+        
+        // Start auto-refresh check
+        checkForUpdates();
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Status update notifications
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('updated')) {
+            showNotification('Request status updated successfully!', 'success');
+        }
+        
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

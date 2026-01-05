@@ -1,0 +1,674 @@
+<!-- templates/admin_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - CertChain{% endblock %}
+
+{% block page_heading %}Admin Dashboard{% endblock %}
+{% block page_description %}System overview and recent activities{% endblock %}
+
+{% block content %}
+<!-- Stats Cards Grid -->
+<div class="stats-grid">
+    <!-- Total Users Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(76, 201, 240, 0.1);">
+                    <i class="fas fa-users" style="color: #4cc9f0;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-number">{{ total_users|default:"0" }}</div>
+                <div class="stat-description">Registered in system</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(255, 193, 7, 0.1);">
+                    <i class="fas fa-clock" style="color: #ffc107;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Pending Requests</div>
+                <div class="stat-number">{{ pending_requests|default:"0" }}</div>
+                <div class="stat-description">Awaiting verification</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verified Certificates Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(40, 167, 69, 0.1);">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Verified Certificates</div>
+                <div class="stat-number">{{ verified_certificates|default:"0" }}</div>
+                <div class="stat-description">Successfully verified</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected Requests Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(220, 53, 69, 0.1);">
+                    <i class="fas fa-times-circle" style="color: #dc3545;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Rejected Requests</div>
+                <div class="stat-number">{{ rejected_requests|default:"0" }}</div>
+                <div class="stat-description">Not approved</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Registrations Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(23, 162, 184, 0.1);">
+                    <i class="fas fa-user-plus" style="color: #17a2b8;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Today's Registrations</div>
+                <div class="stat-number">{{ today_registrations|default:"0" }}</div>
+                <div class="stat-description">New users today</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Certificates Card -->
+    <div class="stat-card">
+        <div class="stat-card-content">
+            <div class="stat-icon-container">
+                <div class="stat-icon-circle" style="background-color: rgba(111, 66, 193, 0.1);">
+                    <i class="fas fa-certificate" style="color: #6f42c1;"></i>
+                </div>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Total Certificates</div>
+                <div class="stat-number">{{ total_certificates|default:"0" }}</div>
+                <div class="stat-description">All certificates issued</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities Section -->
+<div class="activities-section">
+    <div class="activities-card">
+        <div class="activities-header">
+            <h2 class="activities-title">
+                <i class="fas fa-history" style="color: #4cc9f0;"></i>
+                Recent Activities
+            </h2>
+        </div>
+        
+        <div class="activities-body">
+            {% if recent_activities %}
+            <div class="activities-list">
+                {% for activity in recent_activities %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        {% if activity.type == 'user_registered' %}
+                        <div class="icon-circle" style="background-color: rgba(76, 201, 240, 0.1);">
+                            <i class="fas fa-user-plus" style="color: #4cc9f0;"></i>
+                        </div>
+                        {% elif activity.type == 'certificate_requested' %}
+                        <div class="icon-circle" style="background-color: rgba(255, 193, 7, 0.1);">
+                            <i class="fas fa-file-alt" style="color: #ffc107;"></i>
+                        </div>
+                        {% elif activity.type == 'certificate_verified' %}
+                        <div class="icon-circle" style="background-color: rgba(40, 167, 69, 0.1);">
+                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                        </div>
+                        {% elif activity.type == 'certificate_rejected' %}
+                        <div class="icon-circle" style="background-color: rgba(220, 53, 69, 0.1);">
+                            <i class="fas fa-times-circle" style="color: #dc3545;"></i>
+                        </div>
+                        {% else %}
+                        <div class="icon-circle" style="background-color: rgba(23, 162, 184, 0.1);">
+                            <i class="fas fa-info-circle" style="color: #17a2b8;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="activity-content">
+                        <div class="activity-title">{{ activity.title }}</div>
+                        <div class="activity-description">{{ activity.description }}</div>
+                        <div class="activity-time">
+                            <i class="fas fa-clock"></i>
+                            {{ activity.time }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-activities">
+                <div class="no-activities-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h3 class="no-activities-title">No Recent Activities</h3>
+                <p class="no-activities-text">Activities will appear here as users interact with the system.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if recent_activities %}
+        <div class="activities-footer">
+            <a href="#" class="load-more-link">
+                <i class="fas fa-sync-alt"></i>
+                Load More Activities
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Stats Grid Layout */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    
+    /* Stat Card Styling */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stat-card-content {
+        display: flex;
+        align-items: center;
+        padding: 24px;
+        gap: 20px;
+    }
+    
+    .stat-icon-container {
+        flex-shrink: 0;
+    }
+    
+    .stat-icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stat-icon-circle i {
+        font-size: 32px;
+    }
+    
+    .stat-info {
+        flex: 1;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1b3a4b;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    
+    .stat-description {
+        font-size: 14px;
+        color: #8a9fb2;
+        line-height: 1.4;
+    }
+    
+    /* Activities Section */
+    .activities-section {
+        margin-top: 20px;
+    }
+    
+    .activities-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .activities-header {
+        padding: 28px 32px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .activities-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1b3a4b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .activities-title i {
+        font-size: 22px;
+    }
+    
+    .activities-body {
+        padding: 0;
+    }
+    
+    /* Activities List */
+    .activities-list {
+        padding: 0;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 24px 32px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s ease;
+        gap: 20px;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-item:hover {
+        background-color: rgba(13, 27, 42, 0.02);
+    }
+    
+    .activity-icon {
+        flex-shrink: 0;
+    }
+    
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .icon-circle i {
+        font-size: 22px;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1b3a4b;
+        margin-bottom: 6px;
+        line-height: 1.3;
+    }
+    
+    .activity-description {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .activity-time {
+        font-size: 13px;
+        color: #8a9fb2;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .activity-time i {
+        font-size: 12px;
+    }
+    
+    /* No Activities State */
+    .no-activities {
+        padding: 60px 32px;
+        text-align: center;
+    }
+    
+    .no-activities-icon {
+        font-size: 64px;
+        color: #e2e8f0;
+        margin-bottom: 20px;
+    }
+    
+    .no-activities-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 12px;
+    }
+    
+    .no-activities-text {
+        font-size: 14px;
+        color: #8a9fb2;
+        line-height: 1.5;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    /* Activities Footer */
+    .activities-footer {
+        padding: 20px 32px;
+        border-top: 1px solid #f0f0f0;
+        text-align: center;
+    }
+    
+    .load-more-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4cc9f0;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .load-more-link:hover {
+        background-color: rgba(76, 201, 240, 0.1);
+    }
+    
+    .load-more-link i {
+        font-size: 14px;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stat-card {
+        animation: fadeInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .stat-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    .activity-item {
+        animation: fadeInUp 0.3s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .stat-card-content {
+            padding: 20px;
+        }
+        
+        .stat-icon-circle {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .stat-icon-circle i {
+            font-size: 28px;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+        }
+        
+        .activities-header,
+        .activity-item,
+        .activities-footer {
+            padding: 20px;
+        }
+        
+        .activities-title {
+            font-size: 18px;
+        }
+        
+        .activity-item {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .icon-circle {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .icon-circle i {
+            font-size: 20px;
+        }
+        
+        .activity-title {
+            font-size: 15px;
+        }
+        
+        .activity-description {
+            font-size: 13px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stat-card-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        
+        .stat-icon-circle {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .stat-icon-circle i {
+            font-size: 32px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+        }
+        
+        .stat-description {
+            font-size: 13px;
+        }
+        
+        .activities-header {
+            padding: 20px 16px;
+        }
+        
+        .activity-item {
+            padding: 16px;
+        }
+        
+        .no-activities {
+            padding: 40px 16px;
+        }
+        
+        .no-activities-icon {
+            font-size: 48px;
+        }
+    }
+    
+    /* Hover Effects for Icons */
+    .stat-icon-circle {
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-icon-circle {
+        transform: scale(1.1);
+    }
+    
+    /* Scrollbar Styling for Activities */
+    .activities-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .activities-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .activities-list::-webkit-scrollbar-track {
+        background: #f5f5f5;
+        border-radius: 3px;
+    }
+    
+    .activities-list::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .activities-list::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-refresh data every 60 seconds
+        let refreshTimer = setInterval(function() {
+            console.log('Refreshing dashboard data...');
+            // In a real application, fetch data via AJAX here
+            // fetchDashboardData();
+        }, 60000);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(refreshTimer);
+        });
+        
+        // Add click handler for load more activities
+        const loadMoreLink = document.querySelector('.load-more-link');
+        if (loadMoreLink) {
+            loadMoreLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Loading more activities...');
+                // In a real app, load more activities via AJAX
+            });
+        }
+        
+        // Add subtle hover animations
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Add click effect to activity items
+        const activityItems = document.querySelectorAll('.activity-item');
+        activityItems.forEach(item => {
+            item.addEventListener('click', function() {
+                this.style.backgroundColor = 'rgba(13, 27, 42, 0.04)';
+                setTimeout(() => {
+                    this.style.backgroundColor = '';
+                }, 300);
+            });
+        });
+    });
+    
+    // Function to fetch dashboard data (for future AJAX implementation)
+    function fetchDashboardData() {
+        // Example AJAX call structure
+        /*
+        fetch('/api/dashboard-stats/')
+            .then(response => response.json())
+            .then(data => {
+                // Update stats cards with new data
+                updateStatsCards(data);
+            })
+            .catch(error => {
+                console.error('Error fetching dashboard data:', error);
+            });
+        */
+    }
+    
+    // Function to update stats cards (for future AJAX implementation)
+    function updateStatsCards(data) {
+        // Update each stat card with new data
+        const statElements = {
+            'total_users': document.querySelector('.stat-card:nth-child(1) .stat-number'),
+            'pending_requests': document.querySelector('.stat-card:nth-child(2) .stat-number'),
+            'verified_certificates': document.querySelector('.stat-card:nth-child(3) .stat-number'),
+            'rejected_requests': document.querySelector('.stat-card:nth-child(4) .stat-number'),
+            'today_registrations': document.querySelector('.stat-card:nth-child(5) .stat-number'),
+            'total_certificates': document.querySelector('.stat-card:nth-child(6) .stat-number')
+        };
+        
+        for (const [key, element] of Object.entries(statElements)) {
+            if (element && data[key] !== undefined) {
+                // Add animation for number change
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.textContent = data[key];
+                    element.style.transform = 'scale(1)';
+                }, 150);
+            }
+        }
+    }
+</script>
+{% endblock %}

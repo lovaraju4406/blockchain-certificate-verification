@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}CertChain | Blockchain Certificate Authentication{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Smart contract-driven certificate authentication system using Ethereum blockchain for secure and immutable certificate management">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0d1b2a;
+            --secondary: #1b3a4b;
+            --accent: #4cc9f0;
+            --accent-dark: #3aa8d8;
+            --success: #00a86b;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --light: #ffffff;
+            --light-bg: #f5f9ff;
+            --dark-text: #1b3a4b;
+            --muted-text: #415a77;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --sidebar-bg: #0d1b2a;
+            --sidebar-text: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            min-height: 100vh;
+        }
+
+        /* Professional Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--light) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand i {
+            color: var(--accent);
+            font-size: 1.8rem;
+        }
+
+        .nav-link {
+            color: var(--light) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.25rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--accent) !important;
+        }
+
+        .nav-link.active {
+            background-color: var(--accent);
+            color: white !important;
+        }
+
+        .nav-link i {
+            margin-right: 8px;
+        }
+
+        /* User Profile Section */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-left: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 160px);
+        }
+
+        /* Professional Cards */
+        .card {
+            background: var(--card-bg);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 5px solid var(--accent);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: var(--primary);
+            color: white;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+        }
+
+        .card-header.accent {
+            background: var(--accent);
+        }
+
+        .card-header.success {
+            background: var(--success);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-accepted {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Certificate List Grid */
+        .certificate-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .certificate-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s;
+            background: white;
+        }
+
+        .certificate-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Professional Tables */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            color: var(--dark-text);
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Professional Buttons */
+        .btn {
+            font-weight: 500;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-dark);
+            border-color: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        /* Professional Alerts */
+        .alert-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 400px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Professional Forms */
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+        }
+
+        .form-select {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+        }
+
+        /* Professional Badges */
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+        }
+
+        .badge-primary {
+            background-color: var(--accent);
+        }
+
+        .badge-success {
+            background-color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: var(--warning);
+            color: var(--dark-text);
+        }
+
+        .badge-danger {
+            background-color: var(--danger);
+        }
+
+        /* Professional Footer */
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .copyright {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+
+        /* Dashboard Stats */
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stats-icon {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--muted-text);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb-item a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--muted-text);
+        }
+
+        /* Utility Classes */
+        .text-accent {
+            color: var(--accent) !important;
+        }
+
+        .bg-accent {
+            background-color: var(--accent) !important;
+        }
+
+        .border-accent {
+            border-color: var(--accent) !important;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0;
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 20px;
+            color: var(--dark-text);
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--muted-text);
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            min-width: 200px;
+            transition: transform 0.3s;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tech-item i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .tech-item h3 {
+            font-size: 1.5rem;
+        }
+
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--dark-text);
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            color: var(--muted-text);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Modules Container */
+        .modules-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            
+            main {
+                padding: 1rem;
+                margin-top: 70px;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .alert-container {
+                left: 1rem;
+                right: 1rem;
+                max-width: none;
+            }
+            
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 60px 0;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .modules-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .navbar, footer, .no-print {
+                display: none !important;
+            }
+            
+            main {
+                margin-top: 0;
+                padding: 0;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Messages Container -->
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle me-3"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                <i class="fas fa-exclamation-circle me-3"></i>
+                {% else %}
+                <i class="fas fa-info-circle me-3"></i>
+                {% endif %}
+                <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Professional Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="fas fa-certificate"></i>
+                Chain
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon">
+                    <i class="fas fa-bars" style="color: white;"></i>
+                </span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if request.session.email or request.session.reg_id %}
+                        <!-- Logged in (either admin or user) -->
+                        {% if request.session.email == "admin@gmail.com" %}
+                            <!-- Admin Navigation -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" 
+                                    href="{% url 'admin_dashboard' %}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}" 
+                                    href="{% url 'user_management' %}">
+                                    <i class="fas fa-users"></i> User Management
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'certificate' in request.resolver_match.url_name %}active{% endif %}" 
+                                    href="{% url 'admin_requests' %}">
+                                    <i class="fas fa-file-certificate"></i> Certificates
+                                </a>
+                            </li>
+                            {% comment %}   {% endcomment %}
+                        {% else %}
+                            <!-- User Navigation -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}" 
+                                    href="{% url 'user_dashboard' %}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'request' in request.resolver_match.url_name %}active{% endif %}" 
+                                    href="{% url 'new_certificate_request' %}">
+                                    <i class="fas fa-plus-circle"></i> New Request
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'certificates' in request.resolver_match.url_name %}active{% endif %}" 
+                                    href="{% url 'my_certificates' %}">
+                                    <i class="fas fa-folder"></i> My Certificates
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'status' in request.resolver_match.url_name %}active{% endif %}" 
+                                    href="{% url 'request_status' %}">
+                                    <i class="fas fa-history"></i> Request Status
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- User Profile -->
+                        <li class="nav-item">
+                            <div class="user-profile">
+                                <div class="user-avatar">
+                                    {% if request.session.u %}
+                                        {{ request.session.u.name|first|upper }}
+                                    {% elif request.session.data %}
+                                        {{ request.session.data.name|first|upper }}
+                                    {% else %}
+                                        U
+                                    {% endif %}
+                                </div>
+                                <div class="user-info">
+                                    <div class="username">
+                                        {% if request.session.u %}
+                                            {{ request.session.u.name|default:"User" }}
+                                        {% elif request.session.data %}
+                                            {{ request.session.data.name|default:"Admin" }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-role">
+                                        {% if request.session.u %}
+                                            {{ request.session.u.role|upper|default:"USER" }}
+                                        {% elif request.session.data %}
+                                            {{ request.session.data.role|upper|default:"ADMIN" }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        <!-- Logout -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
+                        </li>
+                        
+                    {% else %}
+                        <!-- Public Navigation -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" 
+                                href="{% url 'index' %}">
+                                Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#modules">
+                                Modules
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#blockchain">
+                                Technology
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about">
+                                About
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-outline ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                Login
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                Register
+                            </button>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <!-- Content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Professional Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="{% url 'index' %}">Home</a>
+            <a href="#modules">Modules</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#about">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+        </div>
+        <p class="copyright">
+            &copy; 2023 CertChain - Blockchain Certificate Authentication System. All Rights Reserved.
+        </p>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login to CertChain</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex gap-2 mb-3" role="group">
+                        <button type="button" class="btn btn-outline flex-fill active" id="userRoleBtnModal">User</button>
+                        <button type="button" class="btn btn-outline flex-fill" id="adminRoleBtnModal">Admin</button>
+                    </div>
+                    
+                    <!-- User Login Form -->
+                    <form id="loginFormUserModal" method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="login_type" value="user">
+                        
+                        <div class="mb-3">
+                            <label for="loginRegId" class="form-label">Registration ID</label>
+                            <input type="text" class="form-control" id="loginRegId" name="reg_id" placeholder="Enter your registration ID" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Enter your password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login as User</button>
+                    </form>
+                    
+                    <!-- Admin Login Form -->
+                    <form id="loginFormAdminModal" method="POST" action="{% url 'login' %}" style="display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="login_type" value="admin">
+                        
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Admin Email</label>
+                            <input type="email" class="form-control" id="loginEmail" name="email" placeholder="admin@gmail.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">Admin Password</label>
+                            <input type="password" class="form-control" id="adminPassword" name="password" placeholder="123456789" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login as Admin</button>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Don't have an account? 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal" class="text-accent">
+                                Register here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Register with CertChain</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerFormModal" method="POST" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="registerUsername" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="registerUsername" name="username" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Enter your email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="registerPassword" name="password" placeholder="Create a password (min. 6 characters)" required>
+                            <small class="text-muted">Password must be at least 6 characters</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmpassword" placeholder="Confirm your password" required>
+                        </div>
+                        
+                        <!-- Additional optional fields -->
+                        <div class="mb-3">
+                            <label for="registerRollNo" class="form-label">Roll Number (Optional)</label>
+                            <input type="text" class="form-control" id="registerRollNo" name="roll_no" placeholder="Enter your roll number">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerDepartment" class="form-label">Department *</label>
+                            <select class="form-select" id="registerDepartment" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Civil">Civil</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Chemical">Chemical</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                        <div class="text-center mt-3">
+                            <p class="mb-0">Already have an account? 
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal" class="text-accent">
+                                    Sign in here
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-close alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+            
+            // Login modal role switching
+            const userRoleBtnModal = document.getElementById('userRoleBtnModal');
+            const adminRoleBtnModal = document.getElementById('adminRoleBtnModal');
+            const loginFormUserModal = document.getElementById('loginFormUserModal');
+            const loginFormAdminModal = document.getElementById('loginFormAdminModal');
+            
+            if (userRoleBtnModal) {
+                userRoleBtnModal.addEventListener('click', function() {
+                    userRoleBtnModal.classList.add('active');
+                    adminRoleBtnModal.classList.remove('active');
+                    loginFormUserModal.style.display = 'block';
+                    loginFormAdminModal.style.display = 'none';
+                });
+            }
+            
+            if (adminRoleBtnModal) {
+                adminRoleBtnModal.addEventListener('click', function() {
+                    adminRoleBtnModal.classList.add('active');
+                    userRoleBtnModal.classList.remove('active');
+                    loginFormUserModal.style.display = 'none';
+                    loginFormAdminModal.style.display = 'block';
+                });
+            }
+            
+            // Registration form validation
+            const registerFormModal = document.querySelector('#registerFormModal');
+            if (registerFormModal) {
+                registerFormModal.addEventListener('submit', function(e) {
+                    const password = document.getElementById('registerPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    const department = document.getElementById('registerDepartment').value;
+                    
+                    // Check if all required fields are filled
+                    const username = document.getElementById('registerUsername').value;
+                    const email = document.getElementById('registerEmail').value;
+                    
+                    if (!username || !email || !password || !confirmPassword || !department) {
+                        e.preventDefault();
+                        showError('All fields marked with * are required');
+                        return false;
+                    }
+                    
+                    if (password !== confirmPassword) {
+                        e.preventDefault();
+                        showError('Passwords do not match');
+                        return false;
+                    }
+                    
+                    if (password.length < 6) {
+                        e.preventDefault();
+                        showError('Password must be at least 6 characters long');
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            
+            // URL parameter handling for modals
+            const urlParams = new URLSearchParams(window.location.search);
+            const showModal = urlParams.get('modal');
+            
+            if (showModal === 'login') {
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+            } else if (showModal === 'register') {
+                const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+                registerModal.show();
+            }
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href.startsWith('#') && href.length > 1) {
+                        e.preventDefault();
+                        const element = document.querySelector(href);
+                        if (element) {
+                            window.scrollTo({
+                                top: element.offsetTop - 80,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+            
+            // Error display function
+            function showError(message) {
+                // Remove any existing error alerts
+                const existingErrors = document.querySelectorAll('.alert-danger');
+                existingErrors.forEach(alert => alert.remove());
+                
+                // Create new error alert
+                const alertContainer = document.querySelector('.alert-container');
+                if (alertContainer) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-3"></i>
+                            <div>${message}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    alertContainer.appendChild(alertDiv);
+                    
+                    // Auto remove after 5 seconds
+                    setTimeout(() => {
+                        if (alertDiv.parentElement) {
+                            const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+                            bsAlert.close();
+                        }
+                    }, 5000);
+                }
+            }
+            
+            // Add active class to current nav item based on URL
+            function highlightCurrentNav() {
+                const currentPath = window.location.pathname;
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && currentPath.includes(href.replace(/\/$/, ''))) {
+                        link.classList.add('active');
+                    } else if (href && href.startsWith('#') && href.length > 1) {
+                        // Handle hash links separately
+                        link.classList.remove('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+            
+            highlightCurrentNav();
+            
+            // Auto-fill admin credentials for easier testing
+            if (document.getElementById('loginEmail') && document.getElementById('adminPassword')) {
+                document.getElementById('loginEmail').value = 'admin@gmail.com';
+                document.getElementById('adminPassword').value = '123456789';
+            }
+            
+            // Add loading states to forms
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        submitBtn.disabled = true;
+                        
+                        // Reset button after 10 seconds (in case form submission fails)
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 10000);
+                    }
+                });
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

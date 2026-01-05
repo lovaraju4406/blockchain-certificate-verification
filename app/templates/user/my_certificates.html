@@ -1,0 +1,898 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Certificates - CertChain{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Certificates</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">My Certificates</h3>
+                            <p class="text-muted mb-0">View and manage your verified certificates</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestModal">
+                                <i class="fas fa-plus me-2"></i>New Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-primary shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-primary text-uppercase mb-1">
+                                Total Certificates
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ total_certificates }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-certificate fa-2x text-primary opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-success shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-success text-uppercase mb-1">
+                                Verified
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ verified_certificates }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-warning shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-warning text-uppercase mb-1">
+                                Pending
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ pending_certificates }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-danger shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs fw-semibold text-danger text-uppercase mb-1">
+                                Rejected
+                            </div>
+                            <div class="h5 fw-bold text-gray-800">{{ rejected_certificates }}</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search certificates...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-md-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                                All
+                            </button>
+                            <button type="button" class="btn btn-outline-success filter-btn" data-filter="accepted">
+                                Accepted
+                            </button>
+                            <button type="button" class="btn btn-outline-warning filter-btn" data-filter="pending">
+                                Pending
+                            </button>
+                            <button type="button" class="btn btn-outline-danger filter-btn" data-filter="rejected">
+                                Rejected
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificates Grid -->
+    {% if certificates %}
+    <div class="row" id="certificatesGrid">
+        {% for cert in certificates %}
+        <div class="col-xl-4 col-lg-6 col-md-6 mb-4 certificate-card" data-status="{{ cert.status }}">
+            <div class="card h-100 shadow-sm hover-shadow border-{% if cert.status == 'accepted' %}success{% elif cert.status == 'pending' %}warning{% elif cert.status == 'rejected' %}danger{% else %}secondary{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                    <div>
+                        {% if cert.status == 'accepted' %}
+                        <span class="badge bg-success rounded-pill">Accepted</span>
+                        {% elif cert.status == 'pending' %}
+                        <span class="badge bg-warning rounded-pill">Pending</span>
+                        {% elif cert.status == 'rejected' %}
+                        <span class="badge bg-danger rounded-pill">Rejected</span>
+                        {% endif %}
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if cert.status == 'accepted' and cert.ipfs_url %}
+                            <li>
+                                <a class="dropdown-item" href="{{ cert.ipfs_url }}" download>
+                                    <i class="fas fa-download me-2"></i>Download
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ cert.ipfs_url }}" target="_blank">
+                                    <i class="fas fa-external-link-alt me-2"></i>View
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewModal{{ cert.id }}">
+                                    <i class="fas fa-eye me-2"></i>Details
+                                </a>
+                            </li>
+                            {% if cert.blockchain_hash %}
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#blockchainModal{{ cert.id }}">
+                                    <i class="fab fa-ethereum me-2"></i>Blockchain
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ cert.id }}">
+                                    <i class="fas fa-trash me-2"></i>Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="avatar avatar-lg bg-{% if cert.status == 'accepted' %}success{% elif cert.status == 'pending' %}warning{% elif cert.status == 'rejected' %}danger{% else %}primary{% endif %} bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-certificate fa-2x text-{% if cert.status == 'accepted' %}success{% elif cert.status == 'pending' %}warning{% elif cert.status == 'rejected' %}danger{% else %}primary{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-1">{{ cert.certificate_name }}</h5>
+                            <p class="text-muted mb-0 small">
+                                <i class="fas fa-calendar me-1"></i>
+                                Requested: {{ cert.request_date|date:"M d, Y" }}
+                            </p>
+                            {% if cert.accepted_date %}
+                            <p class="text-muted mb-0 small">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Verified: {{ cert.accepted_date|date:"M d, Y" }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if cert.description %}
+                    <p class="card-text text-muted small mb-3">{{ cert.description|truncatechars:100 }}</p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <small class="text-muted">
+                                <i class="fas fa-hashtag me-1"></i>ID: #{{ cert.id }}
+                            </small>
+                        </div>
+                        {% if cert.status == 'accepted' %}
+                        <div>
+                            <span class="badge bg-light text-dark">
+                                <i class="fab fa-ethereum me-1"></i>IPFS
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Download Section -->
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        {% if cert.status == 'accepted' and cert.ipfs_url %}
+                        <a href="{{ cert.ipfs_url }}" class="btn btn-sm btn-success" download>
+                            <i class="fas fa-download me-1"></i>Download Certificate
+                        </a>
+                        {% elif cert.status == 'accepted' %}
+                        <a href="{% url 'download_certificate' cert.id %}" class="btn btn-sm btn-success" download>
+                            <i class="fas fa-download me-1"></i>Download
+                        </a>
+                        {% elif cert.status == 'pending' %}
+                        <button class="btn btn-sm btn-warning" disabled>
+                            <i class="fas fa-clock me-1"></i>Under Review
+                        </button>
+                        {% elif cert.status == 'rejected' %}
+                        <button class="btn btn-sm btn-danger" disabled>
+                            <i class="fas fa-times me-1"></i>Rejected
+                        </button>
+                        {% endif %}
+                        
+                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal{{ cert.id }}">
+                            <i class="fas fa-info-circle me-1"></i>Details
+                        </a>
+                    </div>
+                    
+                    {% if cert.status == 'accepted' and cert.blockchain_hash %}
+                    <div class="mt-2">
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="fab fa-ethereum me-1"></i>
+                            IPFS CID: 
+                            <span class="ms-1 font-monospace small">{{ cert.blockchain_hash|slice:":12" }}...{{ cert.blockchain_hash|slice:"-8:" }}</span>
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- View Certificate Modal -->
+        <div class="modal fade" id="viewModal{{ cert.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">{{ cert.certificate_name }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Certificate Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <th class="w-40">Certificate Name:</th>
+                                                <td>{{ cert.certificate_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Request ID:</th>
+                                                <td>#{{ cert.id }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Status:</th>
+                                                <td>
+                                                    {% if cert.status == 'accepted' %}
+                                                    <span class="badge bg-success">Accepted</span>
+                                                    {% elif cert.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                    {% elif cert.status == 'rejected' %}
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Request Date:</th>
+                                                <td>{{ cert.request_date|date:"M d, Y H:i" }}</td>
+                                            </tr>
+                                            {% if cert.accepted_date %}
+                                            <tr>
+                                                <th>Accepted Date:</th>
+                                                <td>{{ cert.accepted_date|date:"M d, Y H:i" }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if cert.rejected_date %}
+                                            <tr>
+                                                <th>Rejected Date:</th>
+                                                <td>{{ cert.rejected_date|date:"M d, Y H:i" }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Student Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <th class="w-40">Name:</th>
+                                                <td>{{ cert.user_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Registration ID:</th>
+                                                <td>{{ cert.reg_id }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Verified By:</th>
+                                                <td>{{ cert.verified_by|default:"Admin" }}</td>
+                                            </tr>
+                                            {% if cert.admin_remarks %}
+                                            <tr>
+                                                <th>Admin Remarks:</th>
+                                                <td>{{ cert.admin_remarks }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if cert.description %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Description</h6>
+                            </div>
+                            <div class="card-body">
+                                {{ cert.description|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Status Timeline -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Status Timeline</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <!-- Request Submitted -->
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-primary"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Request Submitted</h6>
+                                            <p class="text-muted mb-0">{{ cert.request_date|date:"M d, Y H:i" }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status Updates -->
+                                    {% if cert.status == 'accepted' %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Request Accepted</h6>
+                                            <p class="text-muted mb-0">{{ cert.accepted_date|date:"M d, Y H:i" }}</p>
+                                            {% if cert.blockchain_hash %}
+                                            <p class="mb-0 small">IPFS CID: {{ cert.blockchain_hash }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% elif cert.status == 'rejected' %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-danger"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Request Rejected</h6>
+                                            <p class="text-muted mb-0">{{ cert.rejected_date|date:"M d, Y H:i" }}</p>
+                                            {% if cert.reject_reason %}
+                                            <p class="mb-0 small">Reason: {{ cert.reject_reason }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-warning"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Under Review</h6>
+                                            <p class="text-muted mb-0">Waiting for admin approval</p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        {% if cert.status == 'accepted' and cert.ipfs_url %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Certificate File</h6>
+                            </div>
+                            <div class="card-body text-center">
+                                {% if cert.file_type == 'pdf' %}
+                                <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                                {% elif cert.file_type in 'jpg,jpeg,png,gif' %}
+                                <i class="fas fa-file-image fa-4x text-success mb-3"></i>
+                                {% else %}
+                                <i class="fas fa-file fa-4x text-primary mb-3"></i>
+                                {% endif %}
+                                
+                                <h6>{{ cert.certificate_name }}</h6>
+                                <p class="text-muted small">Stored securely on IPFS and Blockchain</p>
+                                
+                                <div class="mt-3">
+                                    <a href="{{ cert.ipfs_url }}" class="btn btn-primary me-2" download>
+                                        <i class="fas fa-download me-1"></i>Download Certificate
+                                    </a>
+                                    {% if cert.blockchain_hash %}
+                                    <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#blockchainModal{{ cert.id }}">
+                                        <i class="fab fa-ethereum me-1"></i>View Blockchain
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% elif cert.status == 'rejected' %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Request Rejected</strong>
+                            <p class="mb-0 mt-2">
+                                {% if cert.reject_details %}
+                                {{ cert.reject_details }}
+                                {% else %}
+                                Your request was rejected. Please contact admin for details.
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {% if cert.status == 'accepted' and cert.ipfs_url %}
+                        <a href="{{ cert.ipfs_url }}" class="btn btn-success" download>
+                            <i class="fas fa-download me-1"></i>Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain Modal -->
+        {% if cert.blockchain_hash %}
+        <div class="modal fade" id="blockchainModal{{ cert.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">
+                            <i class="fab fa-ethereum me-2"></i>Blockchain Verification
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fab fa-ethereum fa-3x text-primary mb-3"></i>
+                            <h5>Certificate Stored on Blockchain</h5>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Blockchain Details</h6>
+                                <div class="mb-2">
+                                    <small class="text-muted">IPFS CID:</small>
+                                    <div class="input-group input-group-sm mt-1">
+                                        <input type="text" class="form-control" value="{{ cert.blockchain_hash }}" readonly id="hash{{ cert.id }}">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="copyHash('hash{{ cert.id }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Certificate ID:</small>
+                                        <p class="mb-0 fw-bold">#{{ cert.id }}</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Storage Date:</small>
+                                        <p class="mb-0 fw-bold">{{ cert.accepted_date|date:"M d, Y H:i"|default:"-" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This certificate is securely stored on IPFS and verified on the blockchain.
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="{{ cert.ipfs_url }}" class="btn btn-success me-2" download>
+                                <i class="fas fa-download me-2"></i>Download Certificate
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal{{ cert.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Delete Request</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                        </div>
+                        <p>Are you sure you want to delete the request for <strong>"{{ cert.certificate_name }}"</strong>?</p>
+                        <p class="text-muted small">This will remove the request from your account but won't delete it from blockchain.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{% url 'delete_certificate' cert.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if certificates.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if certificates.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ certificates.previous_page_number }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+            {% endif %}
+            
+            {% for i in certificates.paginator.page_range %}
+                {% if certificates.number == i %}
+                <li class="page-item active">
+                    <span class="page-link">{{ i }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if certificates.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ certificates.next_page_number }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-folder-open fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Certificates Found</h4>
+                    <p class="text-muted mb-4">You haven't submitted any certificate requests yet.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestModal">
+                        <i class="fas fa-plus me-2"></i>Request Certificate Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- New Request Modal -->
+    <div class="modal fade" id="requestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">New Certificate Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-file-certificate fa-4x text-primary mb-4"></i>
+                    <h5>Request Certificate Verification</h5>
+                    <p class="text-muted mb-4">To request a new certificate verification, please go to the request page.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'new_certificate_request' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>New Certificate Request
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Certificate Card Styles */
+    .certificate-card {
+        transition: all 0.3s ease;
+    }
+    
+    .certificate-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .hover-shadow {
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .hover-shadow:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Avatar Styles */
+    .avatar {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .avatar-lg {
+        width: 60px;
+        height: 60px;
+    }
+    
+    /* Filter Button Styles */
+    .filter-btn.active {
+        background-color: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+    
+    /* Border Colors for Status */
+    .border-start-primary {
+        border-left: 4px solid #0d6efd !important;
+    }
+    
+    .border-start-success {
+        border-left: 4px solid #198754 !important;
+    }
+    
+    .border-start-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .border-start-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+    
+    /* Timeline Styles */
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+    }
+    
+    .timeline-content {
+        padding-left: 10px;
+    }
+    
+    /* Modal Header Gradient */
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1b3a4b 100%);
+    }
+    
+    .modal-header.bg-dark {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    .modal-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    /* Font Monospace for CID */
+    .font-monospace {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .certificate-card {
+            margin-bottom: 1rem;
+        }
+        
+        .avatar-lg {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            margin-bottom: 5px;
+        }
+        
+        .timeline {
+            padding-left: 20px;
+        }
+        
+        .timeline-marker {
+            left: -20px;
+            width: 15px;
+            height: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const certificateCards = document.querySelectorAll('.certificate-card');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                // Filter cards
+                certificateCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const status = card.dataset.status;
+                        card.style.display = status === filter ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            certificateCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+        
+        // Copy IPFS CID
+        window.copyHash = function(elementId) {
+            const hashElement = document.getElementById(elementId);
+            hashElement.select();
+            hashElement.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(hashElement.value).then(() => {
+                // Show success feedback
+                const copyBtn = hashElement.nextElementSibling;
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                copyBtn.classList.remove('btn-outline-secondary');
+                copyBtn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHtml;
+                    copyBtn.classList.remove('btn-success');
+                    copyBtn.classList.add('btn-outline-secondary');
+                }, 2000);
+            });
+        };
+        
+        // Download tracking
+        const downloadLinks = document.querySelectorAll('a[download]');
+        downloadLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // You can add analytics or logging here
+                console.log('Download initiated:', this.href);
+            });
+        });
+        
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Auto-refresh for pending certificates
+        function checkPendingCertificates() {
+            const pendingCards = document.querySelectorAll('.certificate-card[data-status="pending"]');
+            if (pendingCards.length > 0) {
+                // Refresh page every 30 seconds if there are pending certificates
+                setTimeout(() => {
+                    window.location.reload();
+                }, 30000);
+            }
+        }
+        
+        // Start checking for pending certificates
+        checkPendingCertificates();
+    });
+</script>
+{% endblock %}
