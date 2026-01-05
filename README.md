@@ -48,7 +48,6 @@ Tools:
 --------------------------------------------------
 
 🗂️ Project Folder Structure
-
 project-root/
 │
 ├── app/
