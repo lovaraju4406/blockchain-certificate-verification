@@ -48,6 +48,8 @@ Tools:
 --------------------------------------------------
 
 🗂️ Project Folder Structure
+
+
 project-root/
 │
 ├── app/
@@ -93,6 +95,7 @@ project-root/
 ├── .gitignore
 ├── db.sqlite3
 └── manage.py
+
 
 --------------------------------------------------
 
