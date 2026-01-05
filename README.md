@@ -1,56 +1,56 @@
-🎓 Blockchain-Based Certificate Storage & Verification System
+# 🎓 Blockchain-Based Certificate Storage & Verification System
 
-Welcome to the Blockchain-Based Certificate Storage & Verification System!
-This project provides a secure and decentralized solution for issuing, storing, and verifying academic certificates using Blockchain (Ethereum) and IPFS, with a Django backend for application logic.
+Welcome to the **Blockchain-Based Certificate Storage & Verification System**.  
+This project provides a secure and decentralized solution for issuing, storing, and verifying academic certificates using **Blockchain (Ethereum)** and **IPFS**, with a **Django backend** for application logic.
 
 The system ensures certificate authenticity, prevents forgery, and allows instant verification using blockchain records.
 
---------------------------------------------------
+---
 
-✨ Features
+## ✨ Features
 
-🌟 Core Features:
-- Secure Certificate Upload by Admin
-- Certificate Storage on IPFS
-- Blockchain-based Hash Storage (Ethereum)
-- Public Certificate Verification
-- Admin Control via Django Backend
-- Media-based Certificate Management
-- Web-based Interface using HTML Templates
+### 🌟 Core Features
+- Secure certificate upload by admin  
+- Certificate storage on IPFS  
+- Blockchain-based hash storage (Ethereum)  
+- Public certificate verification  
+- Admin control via Django backend  
+- Media-based certificate management  
+- Web-based interface using HTML templates  
 
---------------------------------------------------
+---
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 
-Backend:
+### Backend
 - Django (Python)
 - SQLite (Development Database)
 
-Blockchain:
+### Blockchain
 - Ethereum (Local Test Network)
 - Solidity (Smart Contracts)
 - Truffle Framework
 - Ganache
 
-Decentralized Storage:
+### Decentralized Storage
 - IPFS (Helia)
 
-Frontend:
+### Frontend
 - HTML
 - CSS
 - JavaScript
 
-Tools:
+### Tools
 - Node.js
 - npm
 - Conda (Python Environment)
 
---------------------------------------------------
+---
 
-🗂️ Project Folder Structure
+## 🗂️ Project Folder Structure
 
-
-'''project-root/
+```text
+project-root/
 │
 ├── app/
 │   ├── __pycache__/
@@ -94,14 +94,14 @@ Tools:
 │
 ├── .gitignore
 ├── db.sqlite3
-└── manage.py '''
+└── manage.py
+```
 
+---
 
---------------------------------------------------
+## 🚀 Quick Start Guide
 
-🚀 Quick Start Guide
-
-Prerequisites:
+### Prerequisites
 - Git
 - Python 3.9+
 - Node.js
@@ -110,84 +110,86 @@ Prerequisites:
 - Truffle
 - Conda (recommended)
 
---------------------------------------------------
+---
 
-🔗 Step 1: Start Ganache
+## 🔗 Step 1: Start Ganache
+1. Open Ganache  
+2. Start a local Ethereum workspace  
+3. Keep Ganache running in the background  
 
-1. Open Ganache
-2. Start a local Ethereum workspace
-3. Keep Ganache running in the background
+---
 
---------------------------------------------------
+## 🖥️ Step 2: Run Django Backend (Terminal 1)
 
-🖥️ Step 2: Run Django Backend (Terminal 1)
-
+```bash
 conda activate env
 cd <PROJECT_ROOT_DIRECTORY>
 pip install django web3
 python manage.py runserver
+```
 
-Backend URL:
+Backend will be available at:  
+```
 http://127.0.0.1:8000/
+```
 
---------------------------------------------------
+---
 
-⛓️ Step 3: Compile & Deploy Smart Contracts
+## ⛓️ Step 3: Compile & Deploy Smart Contracts
 
+```bash
 cd blocks
 truffle compile
 truffle migrate
+```
 
---------------------------------------------------
+---
 
-🌐 Step 4: Run IPFS Server (Terminal 2)
+## 🌐 Step 4: Run IPFS Server (Terminal 2)
 
+```bash
 cd <PROJECT_ROOT_DIRECTORY>/IPFS
 npm install
 node test.js
+```
 
---------------------------------------------------
+---
 
-🔍 How Certificate Verification Works
+## 🔍 How Certificate Verification Works
+1. Admin uploads a certificate  
+2. Certificate file is stored on IPFS  
+3. IPFS hash is generated  
+4. Hash is stored on Ethereum blockchain via smart contract  
+5. Transaction hash is saved in the system  
+6. Anyone can verify certificate authenticity using blockchain data  
 
-1. Admin uploads a certificate
-2. Certificate file is stored on IPFS
-3. IPFS hash is generated
-4. Hash is stored on Ethereum blockchain via smart contract
-5. Transaction hash is saved in the system
-6. Anyone can verify certificate authenticity using blockchain data
+---
 
---------------------------------------------------
+## 📌 Use Cases
+- Universities & Colleges  
+- Educational Institutions  
+- Certification Authorities  
+- Employers for background verification  
 
-📌 Use Cases
+---
 
-- Universities & Colleges
-- Educational Institutions
-- Certification Authorities
-- Employers for Background Verification
+## 🔒 Advantages
+- Eliminates certificate forgery  
+- Tamper-proof blockchain records  
+- Decentralized storage  
+- Transparent verification  
+- Secure and scalable system  
 
---------------------------------------------------
+---
 
-🔒 Advantages
+## 📄 Future Enhancements
+- QR-code based verification  
+- Public Ethereum deployment  
+- Role-based authentication  
+- React frontend integration  
+- Cloud deployment  
 
-- Eliminates certificate forgery
-- Tamper-proof blockchain records
-- Decentralized storage
-- Transparent verification
-- Secure and scalable system
+---
 
---------------------------------------------------
-
-📄 Future Enhancements
-
-- QR-code based verification
-- Public Ethereum deployment
-- Role-based authentication
-- React frontend integration
-- Cloud deployment
-
---------------------------------------------------
-
-📜 License
-
-This project is developed for academic and educational purposes.
+## 📜 License
+This project is developed for **academic and educational purposes**.
