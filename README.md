@@ -95,7 +95,6 @@ project-root/
 ├── db.sqlite3
 └── manage.py
 
-
 --------------------------------------------------
 
 🚀 Quick Start Guide
@@ -141,7 +140,7 @@ truffle migrate
 
 🌐 Step 4: Run IPFS Server (Terminal 2)
 
-cd <PROJECT_ROOT_DIRECTORY>\IPFS
+cd <PROJECT_ROOT_DIRECTORY>/IPFS
 npm install
 node test.js
 
